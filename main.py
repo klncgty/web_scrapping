@@ -16,7 +16,10 @@ class Item:
     rating:float   | None
 
  
-
+    """Belirli bir url'den html içeriğini çekmek için yazdığım fonksiyon. 
+    eğer bir hata alırsak false değerini dndürür. Devam ederse htmlparser ile analiz edilmiş 
+    bir html nesnesine çevirerek, html nesnesini return ediyor.
+    """
 def get_html(url,**kwargs):
 #istemci olarak sunucuya kendimizi tanıttığımız bir http başlıktır user agent. 
     headers = {
@@ -37,8 +40,11 @@ def get_html(url,**kwargs):
 
 
 
-
 def parse_search_page(html):
+    """ Arama sayfasındaki ürünleri listeleyen html'i tarar.
+    li.VcGDfKKy_dvNbxUqm29K sınıfına sahip tüm liste öğelerini seçer. 
+    her bür ürünün url'sini oluşturmak için urljon fonksiyonu kullanıldı.
+    """
 #ürün sınıfı 
     products = html.css("li.VcGDfKKy_dvNbxUqm29K")
 #ürün linklerine ulaşma
@@ -48,6 +54,9 @@ def parse_search_page(html):
 
 
 def parse_item_page(html):
+    """ ürüne dair istediğimiz, isim, ürün numarası, fiyat ve puanlamayı bize htmlden bulur getirir.
+    
+    """
     new_item = Item(
         name=extract_text(html, "h1#product-page-title"),
         item_num=extract_text(html, "span#product-item-number"),
@@ -58,6 +67,10 @@ def parse_item_page(html):
 
 #istenilen çıktı alınamıyorsa None geçsin.
 def extract_text(html, sel):
+    """ css selectoru kullanarak html içeriğinden metin çıkarmak için fonksiyon.
+        eğer bir öğe bulunamazsa None return eder.
+    
+    """
     try:
         return html.css_first(sel).text()
     except AttributeError:
@@ -65,6 +78,12 @@ def extract_text(html, sel):
 
 
 def main():
+    """Ana işlem fonksiyonu. Her sayfa için ayrı ayrı parse_search_page fonksiynunu kullanarak 
+    ürün url'lerini çeker.
+     Her bir ürün bağlantısı için parse_item_page fonk. kullanarak ürün bilgilerini alır ve
+     products listesine ekler.
+     Son olarak asdict fonksiyonu ile her bir ürünü sözlük olarak bastırır.
+    """
     products = []
     url= "https://www.rei.com/c/camping-and-hiking/f/scd-deals?page="
     for x in range(1,10):
