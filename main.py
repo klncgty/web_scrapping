@@ -1,16 +1,26 @@
-#v2
+
 
 import httpx
 from selectolax.parser import HTMLParser
 import pandas as pd
 import time
 from urllib.parse import urljoin
+from dataclasses import dataclass, asdict
 
+
+@dataclass
+class Item:
+    name:str | None
+    item_num:str | None
+    price:str     | None
+    rating:float   | None
+
+ 
 
 def get_html(url,**kwargs):
 #istemci olarak sunucuya kendimizi tanıttığımız bir http başlıktır user agent. 
     headers = {
-        "User-Agent": "USERAGENT"
+        "User-Agent": "YOURAGENT"
         }
 # siteden aldığımız geri dönüşleri resp'e depolarız
     if kwargs.get("page"):
@@ -37,6 +47,14 @@ def parse_search_page(html):
     
 
 
+def parse_item_page(html):
+    new_item = Item(
+        name=extract_text(html, "h1#product-page-title"),
+        item_num=extract_text(html, "span#product-item-number"),
+        price=extract_text(html, "span#buy-box-product-price"),
+        rating=extract_text(html,"span-cdr-rating__number_13-5-3"),
+    )
+    return new_item
 
 #istenilen çıktı alınamıyorsa None geçsin.
 def extract_text(html, sel):
@@ -47,8 +65,9 @@ def extract_text(html, sel):
 
 
 def main():
+    products = []
     url= "https://www.rei.com/c/camping-and-hiking/f/scd-deals?page="
-    for x in range(1,100):
+    for x in range(1,10):
         print(f" {x}.sayfa gösteriliyor  ")
         html=get_html(url,page=x)
         
@@ -58,9 +77,11 @@ def main():
         for url  in product_urls:
             print(url)
             html = get_html(url)
-            print(html.css_first("title").text())
-        time.sleep(1)
-            
+            products.append(parse_item_page(html))
+            time.sleep(0.2)
+       
+    for product in products:
+        print(asdict(product))     
             
     
 
